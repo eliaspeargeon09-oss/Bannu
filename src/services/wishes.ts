@@ -15,9 +15,9 @@ export interface SubmitWishResult {
 }
 
 /**
- * Submit a wish to Cloud Firestore collection 'wishes'
+ * Submit a wish to Cloud Firestore collection 'wishes' (Friendship Zone)
  * @param message The user's message (max 1000 characters)
- * @param includeTimestamp Whether to include serverTimestamp() (Option B) or message only (Option A)
+ * @param includeTimestamp Whether to include serverTimestamp() or message only
  */
 export async function submitWish(
   message: string,
@@ -86,67 +86,6 @@ export async function submitWish(
       error:
         errorObj?.message ||
         'Unable to send wish right now. Please check your internet connection and try again.',
-    };
-  }
-}
-
-/**
- * Submit Bannu's private birthday wish to Cloud Firestore collection 'p_wishes'
- * @param message The user's birthday wish
- */
-export async function submitBirthdayWish(message: string): Promise<SubmitWishResult> {
-  const trimmed = message.trim();
-
-  // Validate non-empty
-  if (!trimmed) {
-    return {
-      success: false,
-      error: 'Please write your wish before proceeding ❤️',
-    };
-  }
-
-  if (trimmed.length > 2000) {
-    return {
-      success: false,
-      error: 'Birthday wish exceeds character limit.',
-    };
-  }
-
-  if (!isFirebaseConfigured() || !db) {
-    return {
-      success: false,
-      error: 'Firebase is not initialized with a valid configuration.',
-    };
-  }
-
-  try {
-    // Strictly collection 'p_wishes' (NEVER 'wishes')
-    const pWishesRef = collection(db, 'p_wishes');
-
-    // Strictly field 'message' only
-    const docRef = await addDoc(pWishesRef, {
-      message: trimmed,
-    });
-
-    return {
-      success: true,
-      docId: docRef.id,
-    };
-  } catch (err: unknown) {
-    const errorObj = err as { code?: string; message?: string };
-    console.error('Error submitting birthday wish to p_wishes:', err);
-
-    if (errorObj?.code === 'permission-denied') {
-      return {
-        success: false,
-        error:
-          'Firestore security rule rejected creation in "p_wishes". Please ensure allow create is granted in Firestore rules.',
-      };
-    }
-
-    return {
-      success: false,
-      error: errorObj?.message || 'Unable to submit birthday wish right now.',
     };
   }
 }

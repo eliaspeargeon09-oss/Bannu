@@ -9,32 +9,21 @@ import {
   MicOff,
   Wind,
   Scissors,
-  Mail,
   RotateCcw,
   Star,
   Cake,
-  CheckCircle2,
-  AlertCircle,
-  Loader2,
 } from 'lucide-react';
 import { sounds } from '../../utils/audio';
-import { submitBirthdayWish } from '../../services/wishes';
 
 /**
  * =======================================================================
- * EDITABLE BIRTHDAY NOTE PLACEHOLDER
- * Replace the placeholder text below with your complete personal birthday note.
- * You can write as many paragraphs as you like — the letter view automatically
- * provides smooth, natural scrolling on all mobile and desktop devices.
+ * BIRTHDAY NOTE TEXT
  * =======================================================================
  */
-export const BIRTHDAY_NOTE_TEXT = `[Your complete personal handwritten birthday note will be placed here.]
-
-Dear Bannu,
-
-[Write your personal birthday message here. This entire letter is fully editable and will preserve all paragraph breaks, spacing, and personal sentiments exactly as you write them.]
-
-[Feel free to paste as many paragraphs as you like — the letter view automatically provides smooth, comfortable scrolling for reading on any screen.]`;
+export const BIRTHDAY_NOTE_TEXT =
+  "Happy birthday, bhai.\n\n" +
+  "Really, I wanted to write so much for u, but health reason valla I couldn't write much — em anukoku. U r always special.\n\n" +
+  "Once again, happy birthday, man! ❤️";
 
 interface BirthdayCakeScreenProps {
   onReturnToMap: () => void;
@@ -43,9 +32,8 @@ interface BirthdayCakeScreenProps {
 
 type CelebrationStage =
   | 'cake_reveal' // Stage 1: The Birthday Cake reveal
-  | 'make_wish' // Stage 2: Make a Wish (private textarea)
-  | 'blow_and_cut' // Stage 3: Blow candles & Cut the cake
-  | 'birthday_note'; // Stage 4: Full-screen handwritten letter
+  | 'blow_and_cut' // Stage 2: Blow candles & Cut the cake
+  | 'birthday_note'; // Stage 3: Full-screen handwritten letter
 
 export const BirthdayCakeScreen: React.FC<BirthdayCakeScreenProps> = ({
   onReturnToMap,
@@ -54,12 +42,7 @@ export const BirthdayCakeScreen: React.FC<BirthdayCakeScreenProps> = ({
   // Main stage tracking
   const [stage, setStage] = useState<CelebrationStage>('cake_reveal');
 
-  // Stage 2: Wish state (saved to collection 'p_wishes' with message only)
-  const [wishInput, setWishInput] = useState('');
-  const [isSubmittingWish, setIsSubmittingWish] = useState(false);
-  const [wishError, setWishError] = useState<string | null>(null);
-
-  // Stage 3: Cake state
+  // Cake state
   const [isCandleLit, setIsCandleLit] = useState(true);
   const [isSmokeRising, setIsSmokeRising] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -67,7 +50,6 @@ export const BirthdayCakeScreen: React.FC<BirthdayCakeScreenProps> = ({
   const [readyForCakeCutting, setReadyForCakeCutting] = useState(false);
   const [isCutting, setIsCutting] = useState(false);
   const [isCakeCut, setIsCakeCut] = useState(false);
-  const [showNoteButton, setShowNoteButton] = useState(false);
 
   // Microphone detection state
   const [isListeningMic, setIsListeningMic] = useState(false);
@@ -204,44 +186,11 @@ export const BirthdayCakeScreen: React.FC<BirthdayCakeScreenProps> = ({
       sounds.playCelebration();
       setShowConfetti(true);
 
-      // Reveal button to read birthday note
+      // Transition directly to the birthday letter
       setTimeout(() => {
-        setShowNoteButton(true);
-      }, 700);
+        setStage('birthday_note');
+      }, 1000);
     }, 900);
-  };
-
-  // Submit Bannu's private birthday wish to Firestore collection 'p_wishes'
-  const handleSubmitBirthdayWish = async () => {
-    if (isSubmittingWish) return;
-    const trimmed = wishInput.trim();
-    if (!trimmed) {
-      setWishError('Please write your wish before proceeding ❤️');
-      sounds.playTap();
-      return;
-    }
-
-    setIsSubmittingWish(true);
-    setWishError(null);
-    sounds.playTap();
-
-    try {
-      // Connect strictly to collection 'p_wishes' with field 'message'
-      const res = await submitBirthdayWish(trimmed);
-      if (res.success) {
-        sounds.playCelebration();
-        // Clear private wish from browser memory
-        setWishInput('');
-        setStage('blow_and_cut');
-      } else {
-        setWishError(res.error || 'Failed to submit wish. Please check your connection.');
-      }
-    } catch (e: unknown) {
-      const err = e as Error;
-      setWishError(err?.message || 'Error transmitting your wish.');
-    } finally {
-      setIsSubmittingWish(false);
-    }
   };
 
   // Reset celebration sequence to replay
@@ -255,9 +204,6 @@ export const BirthdayCakeScreen: React.FC<BirthdayCakeScreenProps> = ({
     setReadyForCakeCutting(false);
     setIsCutting(false);
     setIsCakeCut(false);
-    setShowNoteButton(false);
-    setWishInput('');
-    setWishError(null);
     setStage('cake_reveal');
   };
 
@@ -408,9 +354,8 @@ export const BirthdayCakeScreen: React.FC<BirthdayCakeScreenProps> = ({
           <PartyPopper className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400" />
           <span className="font-bold">
             {stage === 'cake_reveal' && 'STAGE 01 // CAKE PROTOCOL'}
-            {stage === 'make_wish' && 'STAGE 02 // SANCTUARY WISH'}
-            {stage === 'blow_and_cut' && 'STAGE 03 // BLOW & CELEBRATE'}
-            {stage === 'birthday_note' && 'STAGE 04 // CAPTAIN\'S LETTER'}
+            {stage === 'blow_and_cut' && 'STAGE 02 // BLOW & CELEBRATE'}
+            {stage === 'birthday_note' && "STAGE 03 // CAPTAIN'S LETTER"}
           </span>
         </div>
 
@@ -593,12 +538,12 @@ export const BirthdayCakeScreen: React.FC<BirthdayCakeScreenProps> = ({
             </svg>
           </div>
 
-          {/* Action Button: LET'S CELEBRATE! strictly proceeding on click */}
+          {/* Action Button: LET'S CELEBRATE! strictly proceeding directly to candle blowing */}
           <div className="w-full max-w-sm mt-2 pb-2">
             <button
               onClick={() => {
                 sounds.playCelebration();
-                setStage('make_wish');
+                setStage('blow_and_cut');
               }}
               className="w-full h-13 sm:h-14 rounded-2xl bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 text-white font-display font-bold text-sm sm:text-base tracking-wider flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(251,191,36,0.45)] hover:shadow-[0_0_45px_rgba(251,191,36,0.65)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
             >
@@ -611,161 +556,13 @@ export const BirthdayCakeScreen: React.FC<BirthdayCakeScreenProps> = ({
       )}
 
       {/* =========================================================================
-          STAGE 2: MAKE A WISH ❤️
-          Prompt Requirements:
-          - Transition into a beautiful, slightly darker candlelit environment.
-          - Display:
-            BEFORE YOU BLOW THE CANDLES...
-            "Close your eyes for a moment."
-            "Think of something you've always wished for."
-            "Now write your wish. I can't see it, so write it heartfully. ❤️"
-          - Provide a large, comfortable multiline writing area.
-            Placeholder: "Write your wish here..."
-          - Add a button:
-            MY WISH IS READY ❤️
-          - IMPORTANT:
-            - This wish is personal to Bannu.
-            - Do not display it publicly.
-            - Do not send it to the backend.
-            - Do not store it.
-            - Keep the wish private in the browser only.
-            - Do not reveal or display the wish after submission.
-          - After he clicks the button, transition to the cake.
-          ========================================================================= */}
-      {stage === 'make_wish' && (
-        <div className="relative z-10 w-full max-w-xl mx-auto flex-1 flex flex-col items-center justify-between px-4 py-5 sm:py-7 text-center animate-letter-unfold">
-          {/* Subtle Darker Candlelit Aura */}
-          <div className="absolute inset-0 bg-radial from-amber-600/10 via-[#07050d]/80 to-[#040208] pointer-events-none rounded-3xl -z-10" />
-
-          {/* Candle Centerpiece in Darkened Room */}
-          <div className="relative flex flex-col items-center my-1">
-            <div className="relative w-12 h-16 flex items-center justify-center">
-              {/* Ambient candle flame glow */}
-              <div className="absolute w-24 h-24 bg-amber-400/25 blur-xl rounded-full animate-pulse" />
-              <svg viewBox="0 0 60 80" className="w-12 h-16 drop-shadow-[0_0_15px_rgba(251,191,36,0.8)]">
-                {/* Candle body */}
-                <rect x="24" y="42" width="12" height="34" rx="3" fill="#fef3c7" stroke="#d97706" strokeWidth="1.2" />
-                <line x1="24" y1="52" x2="36" y2="58" stroke="#e11d48" strokeWidth="1.5" />
-                <line x1="30" y1="42" x2="30" y2="34" stroke="#78350f" strokeWidth="1.5" />
-                {/* Flame */}
-                <g className="animate-flame" style={{ transformOrigin: '30px 34px' }}>
-                  <ellipse cx="30" cy="22" rx="9" ry="15" fill="#f59e0b" opacity="0.4" />
-                  <path d="M30,8 C22,16 21,26 30,30 C39,26 38,16 30,8 Z" fill="#f97316" />
-                  <path d="M30,13 C25,18 24,25 30,28 C36,25 35,18 30,13 Z" fill="#fbbf24" />
-                  <path d="M30,19 C27,22 27,26 30,27 C33,26 33,22 30,19 Z" fill="#ffffff" />
-                </g>
-              </svg>
-            </div>
-            <span className="text-[10px] font-mono-tech tracking-widest text-amber-300/80 uppercase mt-1">
-              SACRED CANDLELIT MOMENT
-            </span>
-          </div>
-
-          {/* Text Messages strictly following prompt */}
-          <div className="my-2 space-y-2 max-w-md mx-auto">
-            <h2 className="font-display text-xl sm:text-2xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-rose-300 to-amber-100 uppercase">
-              BEFORE YOU BLOW THE CANDLES...
-            </h2>
-
-            <div className="space-y-1 text-xs sm:text-sm text-slate-200 font-sans leading-relaxed">
-              <p className="text-amber-200/90 font-serif italic text-sm sm:text-base">
-                "Close your eyes for a moment."
-              </p>
-              <p className="text-slate-300">
-                "Think of something you've always wished for."
-              </p>
-              <p className="text-rose-300/90 font-medium pt-1">
-                "Now write your wish. I can't see it, so write it heartfully. ❤️"
-              </p>
-            </div>
-          </div>
-
-          {/* Large comfortable multiline writing area */}
-          <div className="w-full max-w-md my-2">
-            <div className="relative rounded-2xl p-[1px] bg-gradient-to-r from-amber-500/40 via-rose-500/40 to-amber-500/40 shadow-[0_0_25px_rgba(251,191,36,0.15)] focus-within:shadow-[0_0_35px_rgba(251,191,36,0.35)] transition-all">
-              <textarea
-                value={wishInput}
-                onChange={(e) => {
-                  setWishInput(e.target.value);
-                  if (wishError) setWishError(null);
-                }}
-                disabled={isSubmittingWish}
-                placeholder="Write your wish here..."
-                rows={4}
-                autoFocus
-                className="w-full bg-[#0a0713]/90 text-amber-100 placeholder:text-slate-500 text-sm sm:text-base rounded-2xl p-4 resize-none outline-none border-none leading-relaxed font-sans disabled:opacity-50"
-              />
-            </div>
-            <div className="flex items-center justify-between px-2 pt-1.5 text-[10px] font-mono-tech text-slate-400">
-              <span className="flex items-center gap-1 text-emerald-400">
-                <CheckCircle2 className="w-3 h-3" />
-                <span>100% PRIVATE &amp; CONFIDENTIAL</span>
-              </span>
-              <span className="text-amber-400/90 font-medium">
-                SAVED SECURELY TO PRIVATE SANCTUARY
-              </span>
-            </div>
-          </div>
-
-          {/* Friendly Error Message Box */}
-          {wishError && (
-            <div className="w-full max-w-md p-3 rounded-xl bg-rose-950/70 border border-rose-500/50 flex items-start gap-2.5 text-xs text-rose-200 animate-fadeIn my-1 text-left">
-              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-              <p className="leading-relaxed">{wishError}</p>
-            </div>
-          )}
-
-          {/* Action Button: MY WISH IS READY ❤️ strictly proceeding to cake */}
-          <div className="w-full max-w-sm mt-2 pb-2">
-            <button
-              onClick={handleSubmitBirthdayWish}
-              disabled={isSubmittingWish}
-              className="w-full h-13 sm:h-14 rounded-2xl bg-gradient-to-r from-rose-500 via-amber-500 to-rose-600 text-white font-display font-bold text-sm sm:text-base tracking-wider flex items-center justify-center gap-2 shadow-[0_0_30px_rgba(244,63,94,0.4)] hover:shadow-[0_0_45px_rgba(244,63,94,0.6)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
-            >
-              {isSubmittingWish ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin text-white" />
-                  <span>SEALING YOUR WISH...</span>
-                </>
-              ) : (
-                <>
-                  <Heart className="w-4 h-4 sm:w-5 sm:h-5 text-white fill-white" />
-                  <span>MY WISH IS READY ❤️</span>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* =========================================================================
-          STAGE 3: BLOW CANDLES AND CUT THE CAKE
-          Prompt Requirements:
-          - Display the birthday cake again, with beautifully animated candle flames.
-          - Show:
-            MAKE A WISH AND BLOW!
-          - Provide two ways to extinguish the candles:
-            1. Allow microphone-based blowing if the browser supports microphone access and Bannu grants permission.
-            2. Provide a simple TAP TO BLOW button as a reliable alternative.
-            - Do not make microphone permission compulsory.
-          - When the candles are extinguished:
-            - Animate the flames disappearing.
-            - Show gentle smoke effects.
-            - Release confetti.
-            - Play a birthday celebration sound.
-            - Display:
-              HAPPY BIRTHDAY, CAPTAIN BANNU! 🎉
-          - Then introduce an interactive cake-cutting moment:
-            - Display: "Alright, enough waiting. It's cake-cutting time!"
-            - Provide a CUT THE CAKE button.
-            - When clicked:
-              - Animate a knife cutting through the cake.
-              - Show two cake portions separating slightly.
-              - Add a delightful celebration effect.
-          - After the cake-cutting animation, show:
-            THE CELEBRATION ISN'T OVER YET...
-            A button:
-            READ YOUR BIRTHDAY NOTE ❤️
+          STAGE 2: BLOW CANDLES AND CUT THE CAKE
+          - Display the birthday cake with animated candle flames.
+          - Show: MAKE A WISH AND BLOW!
+          - Extinguish via mic or tap button.
+          - Then prompt CUT THE CAKE.
+          - Knife cuts through the cake, portion separation animation.
+          - Directly opens the full-screen birthday letter.
           ========================================================================= */}
       {stage === 'blow_and_cut' && (
         <div className="relative z-10 w-full max-w-xl mx-auto flex-1 flex flex-col items-center justify-between px-4 py-3 sm:py-5 text-center animate-letter-unfold">
@@ -806,7 +603,7 @@ export const BirthdayCakeScreen: React.FC<BirthdayCakeScreenProps> = ({
                   <span>CAKE CEREMONY ACCOMPLISHED</span>
                 </div>
                 <h1 className="font-display text-xl sm:text-2xl font-extrabold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-rose-300 to-purple-200 uppercase">
-                  THE CELEBRATION ISN'T OVER YET...
+                  OPENING YOUR BIRTHDAY LETTER...
                 </h1>
               </>
             )}
@@ -1101,28 +898,12 @@ export const BirthdayCakeScreen: React.FC<BirthdayCakeScreenProps> = ({
                 <span>{isCutting ? 'CUTTING THE CAKE...' : 'CUT THE CAKE 🎂'}</span>
               </button>
             )}
-
-            {/* If cake has been cut: Reveal button to read birthday note */}
-            {isCakeCut && showNoteButton && (
-              <div className="animate-fadeIn space-y-2">
-                <button
-                  onClick={() => {
-                    sounds.playCelebration();
-                    setStage('birthday_note');
-                  }}
-                  className="w-full h-13 sm:h-14 rounded-2xl bg-gradient-to-r from-rose-500 via-purple-600 to-amber-500 text-white font-display font-extrabold text-sm sm:text-base tracking-wider flex items-center justify-center gap-2 shadow-[0_0_40px_rgba(244,63,94,0.6)] hover:shadow-[0_0_55px_rgba(244,63,94,0.8)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
-                >
-                  <Mail className="w-5 h-5 text-amber-200" />
-                  <span>READ YOUR BIRTHDAY NOTE ❤️</span>
-                </button>
-              </div>
-            )}
           </div>
         </div>
       )}
 
       {/* =========================================================================
-          STAGE 4: THE BIRTHDAY NOTE
+          STAGE 3: THE BIRTHDAY NOTE
           Prompt Requirements:
           - Create a beautiful, full-screen birthday letter experience.
           - Design it like a personal handwritten letter:
