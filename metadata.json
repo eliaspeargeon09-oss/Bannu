@@ -1,0 +1,6 @@
+{
+  "name": "Bannu: The Unknown World",
+  "description": "Cinematic sci-fi birthday exploration adventure app for Bannu.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Friendship Zone wishes
+    match /wishes/{wishId} {
+      allow create: if
+        request.resource.data.keys().hasOnly(['message']) &&
+        request.resource.data.message is string &&
+        request.resource.data.message.size() > 0 &&
+        request.resource.data.message.size() <= 1000;
+
+      allow read, update, delete: if false;
+    }
+
+    // Birthday Celebration wishes
+    match /p_wishes/{wishId} {
+      allow create: if
+        request.resource.data.keys().hasOnly(['message']) &&
+        request.resource.data.message is string &&
+        request.resource.data.message.size() > 0 &&
+        request.resource.data.message.size() <= 2000;
+
+      allow read, update, delete: if false;
+    }
+
+    // Deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
